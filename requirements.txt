@@ -1,0 +1,4 @@
+bson==1.1.0
+hexdump==3.3
+paho-mqtt==1.1
+
