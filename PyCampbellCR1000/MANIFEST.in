@@ -1,0 +1,13 @@
+recursive-include pycampbellcr1000/tests/resources *
+recursive-include docs *
+prune docs/_build
+prune docs/references
+include AUTHORS.rst
+include CHANGES.rst
+include conftest.py
+include COPYING
+include Makefile
+include MANIFEST.in
+include pytest.ini
+include README.rst
+include tox.ini
