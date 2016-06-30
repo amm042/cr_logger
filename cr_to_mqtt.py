@@ -86,7 +86,7 @@ def connect_and_download():
         LOG.debug ('have device: {}'.format(device))                      
         LOG.info ("device time: {}".format(device.gettime()))
                         
-        if tables == None:        
+        if tables == None or len(tables) == 0:  
             tlist = device.list_tables()
             tables ={x: datetime.datetime.now() for x in tlist if not x in ['Status', 'Public']}        
             save_tables(tables)

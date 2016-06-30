@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
-
+import json
 import os.path
-import os
+import datetime
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     client.subscribe("CR6/#")
@@ -13,15 +13,16 @@ def on_message(client, userdata, msg):
     
     os.makedirs(os.path.split(fname)[0], exist_ok =True)
     s = msg.payload
+    js = json.loads(s.decode('utf-8'))
+    js['received_at'] = datetime.datetime.now()
     #s = msg.payload.decode('utf-8', errors='replace')
     
+    mode = 'w'
     if os.path.exists(fname):
-        with open(fname, 'ab') as f:
-            f.write(s)    
-    else:                
-        with open(fname, 'wb') as f:
-            f.write(s)
+        mode = 'a'
     
+    with open(fname, mode) as f:
+        json.dump(js, f)          
 
 if __name__=="__main__":
     client = mqtt.Client()
@@ -35,3 +36,4 @@ if __name__=="__main__":
         exit(-1)
         
     client.loop_forever()
+
