@@ -87,3 +87,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
+CR6/*
+.*
+devices/*
+tables.json
