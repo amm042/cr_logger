@@ -80,7 +80,7 @@ def on_message(client, userdata, msg):
 def get_connected_client():
     global client
     if client != None:
-        shutdown_client()
+        return client
         
     client = mqtt.Client()
 
@@ -108,6 +108,7 @@ def shutdown_client():
     client = None
     
 def connect_and_download():    
+    
     LOG.debug("creating device.")
     
     tables = load_tables()
@@ -130,6 +131,10 @@ def connect_and_download():
             save_tables(tables)
         mqroot = 'CR6/{}'.format(device.serialNo)
         
+        #make the mqtt connection if needed
+        client = get_connected_client()
+        
+        
         for tablename, lastcollect in tables.items():              
             #if tablename != 'WO209060_PBM':
                 #continue
@@ -147,8 +152,9 @@ def connect_and_download():
         return True
         
     finally:
-        
+        shutdown_client()
         save_tables(tables)
+        
 
     return False
 
