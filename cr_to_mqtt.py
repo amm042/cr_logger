@@ -70,6 +70,10 @@ def on_message(client, userdata, msg):
     LOG.info("rcv: "+msg.topic+" "+str(msg.payload))
 
 def get_connected_client():
+    global client
+    if client != None:
+        shutdown_client()
+        
     client = mqtt.Client()
 
     if (client.connect(MQHOST, MQPORT, 60) != mqtt.MQTT_ERR_SUCCESS):
@@ -87,11 +91,12 @@ def get_connected_client():
     return client
 def shutdown_client():
     global client
+    client.on_connect = None
+    client.on_message = None
+         
     client.disconnect()
     time.sleep(1)
     client.loop_stop()        
-    client.on_connect = None
-    client.on_message = None 
     client = None
     
 def connect_and_download():    
@@ -131,12 +136,13 @@ def connect_and_download():
                     time.sleep(0.1)
                 tables[tablename] = items[-1]['Datetime'] + datetime.timedelta(seconds=1)
                 
-        time.sleep(5)
+        return True
         
     finally:
         
         save_tables(tables)
 
+    return False
 
 if __name__ == "__main__":
     

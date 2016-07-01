@@ -13,7 +13,7 @@ def on_message(client, userdata, msg):
     fname = msg.topic+'.json'
     
     os.makedirs(os.path.split(fname)[0], exist_ok =True)
-    s = msg.payload
+    s = msg.payload.decode('utf-8', errors='replace')
     js = json.loads(s)
     js['received_at'] = datetime.datetime.now().isoformat()
     #s = msg.payload.decode('utf-8', errors='replace')
