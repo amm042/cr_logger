@@ -2,18 +2,24 @@ import paho.mqtt.client as mqtt
 import time
 import logging
 import json
-
+import pidfile
 import datetime
 import dateutil.parser
 import os.path
 import threading
 from PyCampbellCR1000.pycampbellcr1000.exceptions import NoDeviceException
+import sys
 
-logging.basicConfig(level=logging.INFO, 
+logfile = "/var/log/"+ os.path.splitext(sys.argv[0])[0] + ".log"
+
+logging.basicConfig(level=logging.INFO,
+                    handlers=(logging.handlers.RotatingFileHandler(logfile,
+                                                                    maxBytes = 256*1024,
+                                                                    backupCount = 6), ),
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 logging.getLogger('pycampbellcr1000').setLevel(logging.WARN)
 logging.getLogger('pylink').setLevel(logging.WARN)
-
 
 LOG = logging.getLogger(__name__)
 TABLE_FILE = "tables.json"
@@ -145,7 +151,7 @@ def connect_and_download():
     return False
 
 if __name__ == "__main__":
-    
+    pidfile.write()
     while True:
         try:
             if connect_and_download():
