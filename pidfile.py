@@ -16,6 +16,7 @@ def write():
         
     atexit.register(cleanup)
 def cleanup():
+    global pidfile
     if pidfile != None:
         os.unlink(pidfile)
         pidfile = None
