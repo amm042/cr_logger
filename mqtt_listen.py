@@ -18,6 +18,8 @@ def on_message(client, userdata, msg):
     js['received_at'] = datetime.datetime.now().isoformat()
     #s = msg.payload.decode('utf-8', errors='replace')
     
+    print(" dec: "+str(js))
+    
     mode = 'w'
     if os.path.exists(fname):
         mode = 'a'

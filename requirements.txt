@@ -4,3 +4,4 @@ paho-mqtt==1.1
 
 python-dateutil==2.5.3
 
+bson==1.1.0
