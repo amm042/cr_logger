@@ -11,7 +11,7 @@ import threading
 from PyCampbellCR1000.pycampbellcr1000.exceptions import NoDeviceException
 import sys
 
-logfile = "/var/log/"+ os.path.splitext(sys.argv[0])[0] + ".log"
+logfile =  os.path.splitext(sys.argv[0])[0] + ".log"
 
 logging.basicConfig(level=logging.INFO,
                     handlers=(logging.StreamHandler(stream=sys.stdout),
