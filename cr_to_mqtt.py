@@ -99,13 +99,14 @@ def get_connected_client():
     return client
 def shutdown_client():
     global client
-    client.on_connect = None
-    client.on_message = None
-         
-    client.disconnect()
-    time.sleep(1)
-    client.loop_stop()        
-    client = None
+    if client != None:
+        client.on_connect = None
+        client.on_message = None
+             
+        client.disconnect()
+        time.sleep(1)
+        client.loop_stop()        
+        client = None
     
 def connect_and_download():    
     
@@ -149,6 +150,7 @@ def connect_and_download():
                     time.sleep(0.1)
                 tables[tablename] = items[-1]['Datetime'] + datetime.timedelta(seconds=1)
                 
+        LOG.info("Collection complete.")
         return True
         
     finally:
