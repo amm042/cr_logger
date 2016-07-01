@@ -126,7 +126,7 @@ def connect_and_download():
                                                    start_date = lastcollect):            
                 for record in items:
                     LOG.debug("got record: {}".format(record))
-                    emit_record(client, mqroot+'/'+tablename, record)
+                    emit_record(mqroot+'/'+tablename, record)
                     time.sleep(0.1)
                 tables[tablename] = items[-1]['Datetime'] + datetime.timedelta(seconds=1)
                 
