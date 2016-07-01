@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 import json
-import bson
+
 import os.path
 import datetime
 def on_connect(client, userdata, flags, rc):
@@ -14,7 +14,7 @@ def on_message(client, userdata, msg):
     
     os.makedirs(os.path.split(fname)[0], exist_ok =True)
     s = msg.payload
-    js = bson.loads(s)
+    js = json.loads(s)
     js['received_at'] = datetime.datetime.now().isoformat()
     #s = msg.payload.decode('utf-8', errors='replace')
     
