@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 import time
 import logging
+import logging.handlers
 import json
 import pidfile
 import datetime
@@ -13,7 +14,8 @@ import sys
 logfile = "/var/log/"+ os.path.splitext(sys.argv[0])[0] + ".log"
 
 logging.basicConfig(level=logging.INFO,
-                    handlers=(logging.handlers.RotatingFileHandler(logfile,
+                    handlers=(logging.StreamHandler(stream=sys.stdout),
+                              logging.handlers.RotatingFileHandler(logfile,
                                                                     maxBytes = 256*1024,
                                                                     backupCount = 6), ),
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
