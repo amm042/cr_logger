@@ -19,6 +19,7 @@ TABLE_FILE = "tables.json"
 MQHOST = "localhost"
 MQPORT = 9999
 mqconnect = threading.Event()
+client = None
 
 from PyCampbellCR1000.pycampbellcr1000 import CR1000
 
@@ -37,13 +38,23 @@ def save_tables(tables):
     data = json.dumps({k:v.isoformat() for k,v in tables.items()})
     with open(TABLE_FILE, 'w') as fp:
         fp.write(data)
-def emit_record(client, topic, rec):
-    
+def emit_record(topic, rec):
+    global client
+    if client== None:
+        client = get_connected_client()
+        
     LOG.info("emit to {}: {}".format(topic, rec))
     # make it serializable
     d = rec['Datetime']
     rec['Datetime'] = rec['Datetime'].isoformat()
-    client.publish(topic,json.dumps(rec), qos=2)
+    result, mid = client.publish(topic,json.dumps(rec), qos=2)
+
+    if result != mqtt.MQTT_ERR_SUCCESS:
+        LOG.warn("MQTT publish failed with {}, restarting connection.".format(mqtt.error_string(result)))
+        try:
+            shutdown_client()
+        except:
+            pass
     rec['Datetime'] = d
     #for x,v in rec.items():
         #print (x,v)
@@ -57,21 +68,34 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     LOG.info("rcv: "+msg.topic+" "+str(msg.payload))
 
-    
-def connect_and_download():    
-    LOG.debug("creating device.")
-    
+def get_connected_client():
     client = mqtt.Client()
 
     if (client.connect(MQHOST, MQPORT, 60) != mqtt.MQTT_ERR_SUCCESS):
         print("Failed to connect to MQTT server.")
-        exit(-1)
+        return None
         
     client.on_connect = on_connect
     client.on_message = on_message
     
     client.loop_start()
-
+    if not mqconnect.wait(timeout=30):
+        LOG.fatal("Failed to connect to MQ server")
+        return None
+    
+    return client
+def shutdown_client():
+    global client
+    client.disconnect()
+    time.sleep(1)
+    client.loop_stop()        
+    client.on_connect = None
+    client.on_message = None 
+    client = None
+    
+def connect_and_download():    
+    LOG.debug("creating device.")
+    
     tables = load_tables()
     
     try:
@@ -92,10 +116,6 @@ def connect_and_download():
             save_tables(tables)
         mqroot = 'CR6/{}'.format(device.serialNo)
         
-        if not mqconnect.wait(timeout=30):
-            LOG.fatal("Failed to connect to MQ server")
-            return
-        
         for tablename, lastcollect in tables.items():              
             #if tablename != 'WO209060_PBM':
                 #continue
@@ -115,11 +135,7 @@ def connect_and_download():
     finally:
         
         save_tables(tables)
-        client.disconnect()
-        time.sleep(1)
-        client.loop_stop()        
-        client.on_connect = None
-        client.on_message = None 
+
 
 if __name__ == "__main__":
     
@@ -129,7 +145,10 @@ if __name__ == "__main__":
                 time.sleep(27)
             
         except NoDeviceException:
-            LOG.fatal("No response from datalogger.")        
+            LOG.critical("No response from datalogger.")       
+        except Exception as x:
+            LOG.critical("Failed with: {}".format(x))
+        
         time.sleep(3)
     
         
