@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import time
 import logging
 import json
+import bson
 import datetime
 import dateutil.parser
 import os.path
@@ -47,7 +48,7 @@ def emit_record(topic, rec):
     # make it serializable
     d = rec['Datetime']
     rec['Datetime'] = rec['Datetime'].isoformat()
-    result, mid = client.publish(topic,json.dumps(rec), qos=2)
+    result, mid = client.publish(topic,bson.dumps(rec), qos=2)
 
     if result != mqtt.MQTT_ERR_SUCCESS:
         LOG.warn("MQTT publish failed with {}, restarting connection.".format(mqtt.error_string(result)))
