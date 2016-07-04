@@ -9,7 +9,7 @@ pidfile = None
 def write():
     global pidfile
     pid = str(os.getpid())
-    pidfile = "/tmp/"+ os.path.splitext(sys.argv[0])[0] + ".pid"
+    pidfile = os.path.join("/tmp/", os.path.splitext(sys.argv[0])[0] + ".pid")
     logging.info('wrote pid to {}'.format(pidfile))
     with open(pidfile,'w')as f:
         f.write(pid)

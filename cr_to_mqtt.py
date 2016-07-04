@@ -10,6 +10,7 @@ import os.path
 import threading
 from PyCampbellCR1000.pycampbellcr1000.exceptions import NoDeviceException
 import sys
+from paho.mqtt.client import MQTT_LOG_INFO
 
 logfile =  os.path.splitext(sys.argv[0])[0] + ".log"
 
@@ -77,6 +78,20 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     LOG.info("rcv: "+msg.topic+" "+str(msg.payload))
 
+def on_log(client, userdata, level, buf):
+    # called when the client has log information. Define
+    # to allow debugging. The level variable gives the severity of the message
+    # and will be one of MQTT_LOG_INFO, MQTT_LOG_NOTICE, MQTT_LOG_WARNING,
+    #MQTT_LOG_ERR, and MQTT_LOG_DEBUG. The message itself is in buf.
+    
+    logmap = {mqtt.MQTT_LOG_INFO: logging.INFO,
+        mqtt.MQTT_LOG_NOTICE: logging.INFO,
+        mqtt.MQTT_LOG_WARNING : logging.WARN,
+        mqtt.MQTT_LOG_ERR : logging.ERROR,
+        mqtt.MQTT_LOG_DEBUG: logging.DEBUG}
+    
+    LOG.log(logmap[level], buf)
+
 def get_connected_client():
     global client
     if client != None:
@@ -89,7 +104,8 @@ def get_connected_client():
         return None
         
     client.on_connect = on_connect
-    client.on_message = on_message
+    client.on_message = on_message    
+    client.on_log = on_log
     
     client.loop_start()
     if not mqconnect.wait(timeout=30):
@@ -102,6 +118,7 @@ def shutdown_client():
     if client != None:
         client.on_connect = None
         client.on_message = None
+        client.on_log = None
              
         client.disconnect()
         time.sleep(1)
