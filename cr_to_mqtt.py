@@ -68,7 +68,7 @@ def emit_record(topic, rec):
     if client== None:
         client = get_connected_client()
           
-    p = 1
+    p = 11
     tries = 0
     while p > 10:
         p = 0
