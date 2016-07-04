@@ -26,6 +26,7 @@ logging.getLogger('pylink').setLevel(logging.WARN)
 
 LOG = logging.getLogger(__name__)
 mqLOG = logging.getLogger("MQTT")
+mqLOG.setLevel(logging.DEBUG)
 
 # mqtt logging levels to python levels
 logmap = {mqtt.MQTT_LOG_INFO: logging.INFO,
