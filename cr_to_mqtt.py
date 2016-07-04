@@ -12,6 +12,7 @@ from PyCampbellCR1000.pycampbellcr1000.exceptions import NoDeviceException
 import sys
 import traceback
 
+
 logfile =  os.path.splitext(sys.argv[0])[0] + ".log"
 
 logging.basicConfig(level=logging.INFO,
@@ -40,6 +41,10 @@ MQPORT = 9999
 mqconnect = threading.Event()
 client = None
 
+# pending mqtt messages
+plock = threading.Lock()
+pending = {}
+
 from PyCampbellCR1000.pycampbellcr1000 import CR1000
 
 def load_tables():
@@ -57,12 +62,13 @@ def save_tables(tables):
     data = json.dumps({k:v.isoformat() for k,v in tables.items()})
     with open(TABLE_FILE, 'w') as fp:
         fp.write(data)
+        
 def emit_record(topic, rec):
     global client
     if client== None:
         client = get_connected_client()
         
-    LOG.info("emit to {}: {}".format(topic, rec))
+    
     # make it serializable
     d = rec['Datetime']
     rec['Datetime'] = rec['Datetime'].isoformat()
@@ -74,6 +80,13 @@ def emit_record(topic, rec):
             shutdown_client()
         except:
             pass
+        
+    else:
+        LOG.info("emit [{}] to {}: {}".format(mid, topic, rec))
+        plock.acquire()
+        pending[mid] = datetime.datetime.now()
+        plock.release()
+                        
     rec['Datetime'] = d
     #for x,v in rec.items():
         #print (x,v)
@@ -95,6 +108,15 @@ def on_log(client, userdata, level, buf):
 
     mqLOG.log(logmap[level], buf)
 
+def on_publish(client, userdata, mid):
+    # message hit the broker
+    n = datetime.datetime.now()
+    plock.acquire()
+    tx = pending[mid]
+    del pending[mid]    
+    plock.release()
+    LOG.info("Pub [{}] took: {}".format(mid, n-tx))    
+
 def get_connected_client():
     global client
     if client != None:
@@ -115,6 +137,7 @@ def get_connected_client():
     client.on_connect = on_connect
     client.on_message = on_message    
     client.on_log = on_log
+    client.on_publish = on_publish
     
     client.loop_start()
     if not mqconnect.wait(timeout=30):
@@ -126,11 +149,22 @@ def shutdown_client():
     global client
     if client != None:
         LOG.info("disconnecting MQTT client")
-             
+        
+        p = 1
+        while p > 0:
+            p = 0
+            plock.acquire()
+            p = len(pending)
+            plock.release()
+            if p > 0:
+                LOG.info("wait for pending messages to shutdown [{}]".format(p))
+                time.sleep(1)
+                         
         client.disconnect()
         time.sleep(1)
         client.loop_stop()
         
+        client.on_publish = None
         client.on_connect = None
         client.on_message = None
         client.on_log = None
