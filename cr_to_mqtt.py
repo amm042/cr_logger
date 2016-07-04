@@ -230,12 +230,13 @@ def connect_and_download():
                     time.sleep(0.1)
                 tables[tablename] = items[-1]['Datetime'] + datetime.timedelta(seconds=1)
                 
-        LOG.info("Collection complete.")
+        
         return True
         
     finally:
         shutdown_client()
         save_tables(tables)
+        LOG.info("Collection complete.")
         
 
     return False
