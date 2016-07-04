@@ -103,10 +103,14 @@ def get_connected_client():
         return client
         
     client = mqtt.Client()
-        
-    if (client.connect(MQHOST, MQPORT, 60) != mqtt.MQTT_ERR_SUCCESS):
-        LOG.error("Failed to connect to MQTT server.")
-        return None
+    
+    try:
+        if (client.connect(MQHOST, MQPORT, 60) != mqtt.MQTT_ERR_SUCCESS):
+            LOG.error("Failed to connect to MQTT server.")
+            return None
+    except ConnectionRefusedError:
+        LOG.error("MQTT server connection refused at {}:{} check the server.".format(MQHOST, MQPORT))
+        return None              
         
     client.on_connect = on_connect
     client.on_message = on_message    
@@ -157,6 +161,9 @@ def connect_and_download():
         #make the mqtt connection if needed
         client = get_connected_client()
         
+        if client == None:
+            return False
+            
         
         for tablename, lastcollect in tables.items():              
             #if tablename != 'WO209060_PBM':
