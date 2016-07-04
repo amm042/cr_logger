@@ -151,13 +151,27 @@ def shutdown_client():
         LOG.info("disconnecting MQTT client")
         
         p = 1
+        tries = 0
         while p > 0:
             p = 0
             plock.acquire()
             p = len(pending)
             plock.release()
             if p > 0:
-                LOG.info("wait for pending messages to shutdown [{}]".format(p))
+                
+                tries += 1
+                if tries > 10:
+                    LOG.info("restarting mqtt connection")
+                    try:
+                        if (client.connect(MQHOST, MQPORT, 60) != mqtt.MQTT_ERR_SUCCESS):
+                            LOG.error("Failed to connect to MQTT server.")
+                            return None
+                    except ConnectionRefusedError:
+                        LOG.error("MQTT server connection refused at {}:{} check the server.".format(MQHOST, MQPORT))
+                        
+                    tries = 0
+                else:
+                    LOG.info("wait for pending messages to shutdown [{}]".format(p))    
                 time.sleep(1)
                          
         client.disconnect()
