@@ -125,13 +125,16 @@ def get_connected_client():
 def shutdown_client():
     global client
     if client != None:
-        client.on_connect = None
-        client.on_message = None
-        client.on_log = None
+        LOG.info("disconnecting MQTT client")
              
         client.disconnect()
         time.sleep(1)
-        client.loop_stop()        
+        client.loop_stop()
+        
+        client.on_connect = None
+        client.on_message = None
+        client.on_log = None
+                
         client = None
     
 def connect_and_download():    
