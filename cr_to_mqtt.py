@@ -92,9 +92,7 @@ def on_log(client, userdata, level, buf):
     # to allow debugging. The level variable gives the severity of the message
     # and will be one of MQTT_LOG_INFO, MQTT_LOG_NOTICE, MQTT_LOG_WARNING,
     #MQTT_LOG_ERR, and MQTT_LOG_DEBUG. The message itself is in buf.
-    
 
-    
     mqLOG.log(logmap[level], buf)
 
 def get_connected_client():
@@ -102,6 +100,8 @@ def get_connected_client():
     if client != None:
         return client
         
+    LOG.info("connecting MQTT client")
+    
     client = mqtt.Client()
     
     try:
