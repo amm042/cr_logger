@@ -25,6 +25,14 @@ logging.getLogger('pycampbellcr1000').setLevel(logging.WARN)
 logging.getLogger('pylink').setLevel(logging.WARN)
 
 LOG = logging.getLogger(__name__)
+mqLOG = logging.getLogger("MQTT")
+
+# mqtt logging levels to python levels
+logmap = {mqtt.MQTT_LOG_INFO: logging.INFO,
+    mqtt.MQTT_LOG_NOTICE: logging.INFO,
+    mqtt.MQTT_LOG_WARNING : logging.WARN,
+    mqtt.MQTT_LOG_ERR : logging.ERROR,
+    mqtt.MQTT_LOG_DEBUG: logging.DEBUG}
 TABLE_FILE = "tables.json"
 MQHOST = "localhost"
 MQPORT = 9999
@@ -84,13 +92,9 @@ def on_log(client, userdata, level, buf):
     # and will be one of MQTT_LOG_INFO, MQTT_LOG_NOTICE, MQTT_LOG_WARNING,
     #MQTT_LOG_ERR, and MQTT_LOG_DEBUG. The message itself is in buf.
     
-    logmap = {mqtt.MQTT_LOG_INFO: logging.INFO,
-        mqtt.MQTT_LOG_NOTICE: logging.INFO,
-        mqtt.MQTT_LOG_WARNING : logging.WARN,
-        mqtt.MQTT_LOG_ERR : logging.ERROR,
-        mqtt.MQTT_LOG_DEBUG: logging.DEBUG}
+
     
-    LOG.log(logmap[level], buf)
+    mqLOG.log(logmap[level], buf)
 
 def get_connected_client():
     global client
