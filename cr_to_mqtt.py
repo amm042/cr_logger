@@ -10,7 +10,7 @@ import os.path
 import threading
 from PyCampbellCR1000.pycampbellcr1000.exceptions import NoDeviceException
 import sys
-from paho.mqtt.client import MQTT_LOG_INFO
+import traceback
 
 logfile =  os.path.splitext(sys.argv[0])[0] + ".log"
 
@@ -103,9 +103,9 @@ def get_connected_client():
         return client
         
     client = mqtt.Client()
-
+        
     if (client.connect(MQHOST, MQPORT, 60) != mqtt.MQTT_ERR_SUCCESS):
-        print("Failed to connect to MQTT server.")
+        LOG.error("Failed to connect to MQTT server.")
         return None
         
     client.on_connect = on_connect
@@ -193,6 +193,7 @@ if __name__ == "__main__":
             LOG.critical("No response from datalogger.")       
         except Exception as x:
             LOG.critical("Failed with: {}".format(x))
+            LOG.critical(traceback.format_exc())
         
         time.sleep(3)
     
